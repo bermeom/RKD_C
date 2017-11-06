@@ -1,6 +1,7 @@
 %% Lab1: ROBOTICS , KINEMATICS, DYNAMICS AND CONTROL
 % Miguel Angle Bermeo Ayerbe
 % install startup_rvc
+% startup_rvc
 close all;clear all;clc; 
 
 %% Task 1 Drilling 40 holes
@@ -34,13 +35,14 @@ figure();
 scatter3(coor_circle(1,:),coor_circle(2,:),coor_circle(3,:),'r','LineWidth',2);
 
 %% Help 3. What about a spiral in a cilinder
-clear all; close all;clc; 
+% clear all; close all;clc; 
 d=0.3;
-n=8;px=2;py=3;pz=4;r1=0.95;r2=d/2;h=9;
-m=100;
-k = 7;
+n=9;
+m=7*n;
+r1=0.95-d/2;
+r2=d/2;
 for i=0:(m)
-    Ptos(:,:,i+1)=troty((-pi*i)/m)*transl(r1,0,0)*trotz((2*pi*i)/n-pi)*transl(r2,0,0);
+    Ptos(:,:,i+1)=troty((-pi*i)/m)*transl(r1,0,0)*trotz((2*pi*i)/n)*transl(r2,0,0);
 end
 coor_circle=transl(Ptos)';
 figure;
@@ -54,26 +56,38 @@ ylabel('y');
 zlabel('z');
 grid on;
 axis equal
+max(coor_circle(3,:))
+load('Data_groove_weld_fv_torus.mat') % This is some data you can use
+plot3(Weld_points(1,:),Weld_points(2,:),Weld_points(3,:),'r','LineWidth',2)
+hold on
+scatter3(Weld_points(1,:),Weld_points(2,:),Weld_points(3,:),'*g')
+xlabel('x');
+ylabel('y');
+zlabel('z');
+axis 'equal'
+
+max(Weld_points(3,:))
 
 %% Reading '.stl' file
 fv=stlread('Torus.stl')% fv is a struct with faces and vertices
-figure(4)
-patch(fv,'FaceColor',       [0.8 0.8 1.0], ...
-         'EdgeColor',       'none',        ...
-         'FaceLighting',    'gouraud',     ...
-         'AmbientStrength', 0.15);
-% Add a camera light, and tone down the specular highlighting
-camlight('headlight');
-material('dull');
-% Fix the axes scaling, and set a nice view angle
-axis('image');
-axis 'equal'
-view([-135 35]);
-
+% figure(4)
+% patch(fv,'FaceColor',       [0.8 0.8 1.0], ...
+%          'EdgeColor',       'none',        ...
+%          'FaceLighting',    'gouraud',     ...
+%          'AmbientStrength', 0.15);
+% % Add a camera light, and tone down the specular highlighting
+% camlight('headlight');
+% material('dull');
+% % Fix the axes scaling, and set a nice view angle
+% axis('image');
+% axis 'equal'
+% view([-135 35]);
+fv.vertices = (r1).*(fv.vertices()./max(fv.vertices(:)));
 fh = [fv.vertices'; ones(1,size(fv.vertices,1))];
-fh1=troty(pi)*fh;
+fh1=troty(pi)*transl(-r1,0,0)*fh;
+% fh1(1:3,:) = (r1+r2)*fh1/max(max(fh1(1:3,:)))
 fv.vertices = fh1(1:3,:)';
-figure(5);
+% figure();
 patch(fv,'FaceColor',       [0.8 0.8 1.0], ...
          'EdgeColor',       'none',        ...
          'FaceLighting',    'gouraud',     ...
@@ -81,7 +95,7 @@ patch(fv,'FaceColor',       [0.8 0.8 1.0], ...
 % Add a camera light, and tone down the specular highlighting
 camlight('headlight');
 material('dull');
-
+hold on;
 % Fix the axes scaling, and set a nice view angle
 axis('image');
 axis 'equal'

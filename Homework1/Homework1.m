@@ -65,4 +65,4 @@ norm(A_B_r3)
 [theta, v] = tr2angvec(A_B_R)
 
 %% 8.
-gamma = tr2eul(A_B_R)
+gamma = tr2eul(A_B_T)
