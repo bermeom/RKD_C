@@ -35,12 +35,13 @@ figure();
 scatter3(coor_circle(1,:),coor_circle(2,:),coor_circle(3,:),'r','LineWidth',2);
 
 %% Help 3. What about a spiral in a cilinder
-% clear all; close all;clc; 
+ clear all; close all;clc; 
 d=0.3;
 n=9;
-m=7*n;
-r1=0.95-d/2;
-r2=d/2;
+m=8*n;
+r = 0.95;
+r1 = 0.95-d/2;
+r2 = d/2;
 for i=0:(m)
     Ptos(:,:,i+1)=troty((-pi*i)/m)*transl(r1,0,0)*trotz((2*pi*i)/n)*transl(r2,0,0);
 end
@@ -60,7 +61,7 @@ max(coor_circle(3,:))
 load('Data_groove_weld_fv_torus.mat') % This is some data you can use
 plot3(Weld_points(1,:),Weld_points(2,:),Weld_points(3,:),'r','LineWidth',2)
 hold on
-scatter3(Weld_points(1,:),Weld_points(2,:),Weld_points(3,:),'*g')
+scatter3(Weld_points(1,:),Weld_points(2,:),Weld_points(3,:),'r','LineWidth',2)
 xlabel('x');
 ylabel('y');
 zlabel('z');
@@ -82,11 +83,12 @@ fv=stlread('Torus.stl')% fv is a struct with faces and vertices
 % axis('image');
 % axis 'equal'
 % view([-135 35]);
-fv.vertices = (r1).*(fv.vertices()./max(fv.vertices(:)));
 fh = [fv.vertices'; ones(1,size(fv.vertices,1))];
-fh1=troty(pi)*transl(-r1,0,0)*fh;
-% fh1(1:3,:) = (r1+r2)*fh1/max(max(fh1(1:3,:)))
-fv.vertices = fh1(1:3,:)';
+fh=troty(pi)*fh;
+fh(1:3,:) = (r).*(fh(1:3,:)./(max(max(fh(1:3,:)))));
+fh = transl(r1,0,0)*fh;
+fv.vertices = fh(1:3,:)';
+
 % figure();
 patch(fv,'FaceColor',       [0.8 0.8 1.0], ...
          'EdgeColor',       'none',        ...
@@ -96,6 +98,7 @@ patch(fv,'FaceColor',       [0.8 0.8 1.0], ...
 camlight('headlight');
 material('dull');
 hold on;
+grid on;
 % Fix the axes scaling, and set a nice view angle
 axis('image');
 axis 'equal'
