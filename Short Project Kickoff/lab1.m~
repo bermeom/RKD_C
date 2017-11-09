@@ -4,16 +4,44 @@
 % startup_rvc
 close all;clear all;clc; 
 
-%% Algorithm
-clear all; close all;clc; 
+%% Task 1 Drilling 40 holes
+% Diameter of the drill 0.010 m. Number of holes: 20 in the front face and 20 in the rear face of half torus: 0.3m of tube diameter and 0.8 m outer radius . The pitch must be pi/19.
+% 1.1 Load all torus points.
+
+load('Drill_Mill_Shape.mat') % This is data.
+figure(1);
+image(Torus);
+title('Torus');
+
+%%
+% Rotate all torus points using robotic toolbox
+
+
+%% Task 2. Drilling and milling 25 shapes like the next figure
+% 
+scatter3(drill_mill_shape(1,:),drill_mill_shape(2,:),drill_mill_shape(3,:),'filled') % plotting the shape
+axis equal
+
+%% Help 1: Think about managing RTB data extructe.
+% Drawing 30 points of circle at center point [2 3 4]', radius 5, using RTB data extructure
+% 
+n=30;px=2;py=3;pz=4;r=5;
+for i=1:n
+    Ptos(:,:,i)=transl(px,py,pz)*trotz((2*pi*i)/n)*transl(5,0,0);
+end
+
+coor_circle=transl(Ptos)';
+figure();
+scatter3(coor_circle(1,:),coor_circle(2,:),coor_circle(3,:),'r','LineWidth',2);
+
+%% Help 3. What about a spiral in a cilinder
+% clear all; close all;clc; 
 d=0.3;
 n=8;
 m=8*n;
 r = 0.95;
 r1 = 0.95-d/2;
 r2 = d/2+0.001;
-scale = 0.2;
-hr = 2.5;
 Ptos1 =[];
 for i=0:(m)
     Ptos1(:,:,i+1)=troty((-pi*i)/m)*transl(r1,0,0)*trotz((2*pi*i)/n)*transl(r2,0,0);
@@ -106,14 +134,14 @@ th1=pi*(20/180);
 th2=pi*(30/180);
 tr1=0.75;
 T1 = trotx(th2)*troty(th1);
+T3 = transl(h/2+r1,w/2,0);
 T4 = transl(h/2,w/2,0);
-T3 = T4*transl(r1,0,0);
 table = [0 h h 0;...
          0 0 w w;...
          0 0 0 0]; 
 temp = [table;ones(1,size(table,2))];
 temp = T1*temp;
-T2 = transl(-h/2,0,tr1+abs(min(temp(3,:))));
+T2 = transl(-h/2,w/2,tr1+abs(min(temp(3,:))));
 temp = T2*temp;
 table = temp(1:3,:) 
 figure
@@ -153,22 +181,23 @@ axis 'equal';
 
 
 % Puma 560
-% hold on
-
-% L(1) = Link([0, 0, 0, pi/2],'modified');
-% L(2) = Link([0, 0, 4.318*scale, 0],'modified');
-% L(3) = Link([0, 1.5005*scale, 0.203*scale, -pi/2],'modified');
-% L(4) = Link([0, 4.331*scale, 0, pi/2],'modified');
-% L(5) = Link([0, 0, 0, -pi/2],'modified');
-% L(6) = Link([0, 0, 0, 0],'modified');
-% p560m_RKDC = SerialLink(L,'base',transl(0,0,hr),'name','Puma 560');
-% p560m_RKDC
-% qz = [0 0 0 0 0 0]
-% p560m_RKDC.plot(qz,'floorlevel',0)
+hold on
+scale = 0.3;
+hr = 2.5;
+L(1) = Link([0, 0, 0, pi/2],'modified');
+L(2) = Link([0, 0, 4.318*scale, 0],'modified');
+L(3) = Link([0, 1.5005*scale, 0.203*scale, -pi/2],'modified');
+L(4) = Link([0, 4.331*scale, 0, pi/2],'modified');
+L(5) = Link([0, 0, 0, -pi/2],'modified');
+L(6) = Link([0, 0, 0, 0],'modified');
+p560m_RKDC = SerialLink(L,'base',transl(0,0,hr),'name','Puma 560');
+p560m_RKDC
+qz = [0 0 0 0 0 0]
+p560m_RKDC.plot(qz,'floorlevel',0)
 
 
 Ptos2_ = T1*T4.*Ptos2;
-Ptos2_ = T2.*Ptos2_;
+Ptos2_ = T2*Ptos2_;
 
 temp = [holes2;ones(1,size(holes2,2))];
 temp= T1*T4*temp;
@@ -181,18 +210,8 @@ zlabel('z');
 grid on;
 axis equal;
 
-
-% Plot a sketch of the environment of the robot
-mdl_puma560
-p560.base= transl(0,0,hr);
-
-p560.a
-p560.plot(qz,'floorlevel',-1);
-hold on;
-
 %%
-%%
-Q= p560.ikine6s(Ptos2_, 'run');
+Q= p560.ikine6s(holes2_, 'run');
 p560.plot(Q);
 %% Animating the Puma manipulator performing a task
 % *Initialize the workspace*:
@@ -201,23 +220,24 @@ p560.plot(Q);
 % clc;clear;close all;
 radius=0.20;
 n=200;
-
+INI = transl(-0.25, 0.25,-0.5); %center of the part
 % Plot a sketch of the environment of the robot
 mdl_puma560
 % figure(6)
 % p560.alhpa= p560.alpha*2;
 p560.base= transl(0,0,hr);
-% p560.d*scale;
+p560.d*scale;
 
 p560.a
-p560.plot(qz,'floorlevel',-1);
+p560.plot(qz,'floorlevel',0);
 hold on;
+
 %%
-circle1 = circle([-0.25 0.25 0], radius);
-circle2 = circle([-0.25 0.25 0], 0.5*radius);
+circle1 = circle([-0.25 0.25 -0.5], radius);
+circle2 = circle([-0.25 0.25 -0.5], 0.5*radius);
 plot3(circle1(1,:), circle1(2,:), circle1(3,:),'g','LineWidth',1);
 patch(circle2(1,:), circle2(2,:), circle2(3,:),'r');
-INI = transl(-0.25, 0.25,0); %center of the part
+
 for i=1:n
     Laser_Pose(:,:,i)= INI*trotx(-pi/2)*troty(2*pi*i/n)*transl(0, 0, -radius);
 end
@@ -226,6 +246,4 @@ end
 Q= p560.ikine6s(Laser_Pose, 'run');
 p560.plot(Q);
 
-%%
-Q= p560m_RKDC.ikine6s(Laser_Pose, 'run');
-p560m_RKDC.plot(Q);
+
